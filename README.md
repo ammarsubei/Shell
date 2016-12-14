@@ -1,2 +1,2 @@
-# Shell
-Primitive shell in C
+## Almond Shell
+Primitive shell in C. 
