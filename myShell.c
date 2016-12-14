@@ -10,19 +10,6 @@
 #define MAXLINE 2500
 #define MAXARGS 21
 
-// My signal handler that handles signal interrupts
-// from CTRL-C and CTRL-Z
-void mySigHandler(int sig)
-{
-	if(sig == SIGINT)
-		printf("\nSIGINT handled...\n");
-
-	else if(sig == SIGTSTP)
-		printf("\nSIGTSTP handled...\n");
-
-    printf(PROMPT);
-	fflush(stdout);
-}
 
 // Function that prints out the prompt
 void promptUser()
@@ -37,27 +24,26 @@ char** checkRedirection(char **oldArgs)
     int redirects = 0;
     int index = 0;
 
-    while(oldArgs[index] != NULL)
+    while (oldArgs[index] != NULL)
         index++;
 
     // For loop that checks for redirection
     // Uses freopen to change stdin/stdout file descriptors
-    int i;
-    for(i = 0; i < index; i++)
+    for (int i = 0; i < index; i++)
     {
-        if(!strcmp(oldArgs[i], ">"))
+        if (!strcmp(oldArgs[i], ">"))
         {
             freopen(oldArgs[i+1], "w", stdout);
             redirects++;
         }  
 
-        else if(!strcmp(oldArgs[i], "<"))
+        else if (!strcmp(oldArgs[i], "<"))
         {
             freopen(oldArgs[i+1], "r", stdin);
             redirects++;
         }
 
-        else if(!strcmp(oldArgs[i], ">>"))
+        else if (!strcmp(oldArgs[i], ">>"))
         {
             freopen(oldArgs[i+1], "a", stdout);
             redirects++;
@@ -70,7 +56,7 @@ char** checkRedirection(char **oldArgs)
 
     // Now create new args array that doesnt contain redirection symbols
     char **newArgs = (char**) malloc(index * sizeof(char*));
-    for (i = 0; i < index; i++)
+    for (int i = 0; i < index; i++)
         newArgs[i] = oldArgs[i];
 
     // Add final NULL element
@@ -80,7 +66,7 @@ char** checkRedirection(char **oldArgs)
     return newArgs;
 }
 
-// Function that forks the process, checks if there are any redirections,
+// Function that forks the process, checks for any redirections,
 // and runs the commands accordingly
 void executeCommand(char **oldArgs)
 {
@@ -89,18 +75,19 @@ void executeCommand(char **oldArgs)
     pid = fork();
 
     // Error forking
-    if(pid < 0)
+    if (pid < 0)
         perror("Almond Shell");
 
     // Child process
-    else if(pid == 0)
+    else if (pid == 0)
     {
-        // Check for any redirections and reate a new arguments array
+        // Check for any redirections and create a new arguments array
         char **newArgs = checkRedirection(oldArgs);
 
         // Execute the command and print out any errors
-        if(execvp(*newArgs, newArgs) == -1)
+        if (execvp(*newArgs, newArgs) == -1)
             perror(*newArgs);
+
         exit(EXIT_FAILURE);
     }
 
@@ -125,18 +112,18 @@ void executeCommand(char **oldArgs)
 // using delimiters, and returns a new array of arguments composed of each string token
 char** readAndTokenize(int *argIndex)
 {
-    char    delimiters[] = " \t\r\n\v\f";
-    char    *token = NULL;
-    char    *inputLine = (char*) malloc(MAXLINE * sizeof(char));
-    char    **args = (char**) malloc(MAXARGS * sizeof(char*));
+    char delimiters[] = " \t\r\n\v\f";
+    char *token = NULL;
+    char *inputLine = (char*) malloc(MAXLINE * sizeof(char));
+    char **args = (char**) malloc(MAXARGS * sizeof(char*));
 
     fgets(inputLine, MAXLINE, stdin);
     token = strtok(inputLine, delimiters);
 
-    if(token == NULL)
+    if (token == NULL)
         return NULL;
 
-    if(!strcmp(token, "exit"))
+    if (!strcmp(token, "exit"))
     {
         printf("Exiting Almond Shell... :(\n");
         free(args);
@@ -145,7 +132,7 @@ char** readAndTokenize(int *argIndex)
     }
 
     // Tokenize line into arguments
-    while(token != NULL)
+    while (token != NULL)
     {
         args[*argIndex] = token;
         token = strtok(NULL, delimiters);
@@ -159,10 +146,6 @@ char** readAndTokenize(int *argIndex)
 
 int main()
 {
-	// Initialize custom signal handler
-    signal(SIGINT, mySigHandler);
-	signal(SIGTSTP, mySigHandler);
-
 	// Initialize variables
     int argIndex = 0;
     char **args = (char**) malloc(MAXARGS * sizeof(char*));
@@ -171,7 +154,7 @@ int main()
     printf("Welcome to Almond Shell!\n");
     printf("Please enter your desired commands below.\n");
 
-	while(1)
+	while (1)
 	{
     	// Prompt user to enter command  
     	promptUser();
@@ -181,7 +164,7 @@ int main()
         args = readAndTokenize(&argIndex);
 
         // If nothing was entered
-        if(args == NULL)
+        if (args == NULL)
             // Skip command execution
             continue;
 
@@ -189,11 +172,10 @@ int main()
         executeCommand(args);
 
     	// Reset argument array and its index
-        int i;
-        for(i = 0; i <= argIndex; i++)
+        for (int i = 0; i <= argIndex; i++)
             args[i] = NULL;
-        argIndex = 0;
 
+        argIndex = 0;
     	// Start again
 	}
 }
