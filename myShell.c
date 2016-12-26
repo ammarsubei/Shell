@@ -5,6 +5,7 @@
 #include <signal.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include "myShell.h"
 
 #define PROMPT "Almond> "
 #define MAXLINE 2500
@@ -12,14 +13,62 @@
 
 
 // Function that prints out the prompt
-void promptUser()
+void prompt_user()
 {
-	printf(PROMPT);
+    printf(PROMPT);
+}
+
+// Built-in shell commands
+char *builtin_str[] = {
+    "cd",
+    "help",
+    "exit"
+};
+
+int (*builtin_func[]) (char **) = {
+    &builtin_cd,
+    &builtin_help,
+    &builtin_exit
+};
+
+int num_builtins() {
+    return sizeof(builtin_str) / sizeof(char *);
+}
+
+int builtin_cd(char **args)
+{
+    if (args[1] == NULL)
+        fprintf(stderr, "Almond Shell: expected argument to \"cd\"\n");
+
+    else 
+        if (chdir(args[1]) != 0) 
+            perror("Almond Shell");
+
+    return 1;
+}
+
+int builtin_help(char **args)
+{
+    printf("Ammar Subei's Almond Shell\n");
+    printf("Type program names and arguments, then hit enter to execute.\n");
+    printf("The following commands are built in:\n");
+
+    for (int i = 0; i < num_builtins(); i++) 
+        printf("  %s\n", builtin_str[i]);
+
+
+    printf("Use the man command for information on other programs.\n");
+    return 1;
+}
+
+int builtin_exit(char **args)
+{
+    return 0;
 }
 
 // Function that checks if there are any redirections from user command line
 // This function is only called within the forked process
-char** checkRedirection(char **oldArgs)
+char** check_redirection(char **oldArgs)
 {
     int redirects = 0;
     int index = 0;
@@ -68,7 +117,7 @@ char** checkRedirection(char **oldArgs)
 
 // Function that forks the process, checks for any redirections,
 // and runs the commands accordingly
-void executeCommand(char **oldArgs)
+void execute_command(char **oldArgs)
 {
     int status;
     pid_t pid, wpid;
@@ -82,7 +131,7 @@ void executeCommand(char **oldArgs)
     else if (pid == 0)
     {
         // Check for any redirections and create a new arguments array
-        char **newArgs = checkRedirection(oldArgs);
+        char **newArgs = check_redirection(oldArgs);
 
         // Execute the command and print out any errors
         if (execvp(*newArgs, newArgs) == -1)
@@ -110,7 +159,7 @@ void executeCommand(char **oldArgs)
 
 // Function that reads a line from user and processes it by tokenizing the line 
 // using delimiters, and returns a new array of arguments composed of each string token
-char** readAndTokenize(int *argIndex)
+char** read_and_tokenize(int *argIndex)
 {
     char delimiters[] = " \t\r\n\v\f";
     char *token = NULL;
@@ -153,15 +202,16 @@ int main()
 	// Welcome message
     printf("Welcome to Almond Shell!\n");
     printf("Please enter your desired commands below.\n");
+    printf("Enter \"help\" for more information.\n");
 
 	while (1)
 	{
     	// Prompt user to enter command  
-    	promptUser();
+    	prompt_user();
 
     	// Read input line from user and tokenize it
         // Every token will be inserted in the arguments array args
-        args = readAndTokenize(&argIndex);
+        args = read_and_tokenize(&argIndex);
 
         // If nothing was entered
         if (args == NULL)
@@ -169,7 +219,7 @@ int main()
             continue;
 
         // Execute the command by passing in the args array
-        executeCommand(args);
+        execute_command(args);
 
     	// Reset argument array and its index
         for (int i = 0; i <= argIndex; i++)
