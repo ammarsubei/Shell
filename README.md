@@ -2,7 +2,7 @@
 Primitive shell in C, written by Ammar Subei.
 
 ### Functionality
-The shell's up-to-date functionality. 
+The shell's up-to-date functionality: 
 
 1. Maximum of 20 arguments
 2. Maximum of 2500 characters per line
@@ -13,5 +13,13 @@ The shell's up-to-date functionality.
   * `command < filename` redirects command to read its input from filename
 4. **Does not** support background processes
 5. **Does not** support multiple child processes
-6. **Does not** support changing directories
+6. **Does not** support changing current directory
+7. **Does not** support command pipes
 
+### TO-DOs
+Here is a checklist of things I plan to work on for Almond Shell:
+
+- [ ] Support changing current directory
+- [ ] Support multiple child processes
+- [ ] Provide user with `help` command
+- [ ] Support command pipes
