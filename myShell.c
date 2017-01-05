@@ -11,6 +11,8 @@
 #define MAXLINE 2500
 #define MAXARGS 21
 
+// Variable to check if any built-in commands were used
+int isBuiltin = 0;
 
 // Function that prints out the prompt
 void prompt_user()
@@ -25,16 +27,12 @@ char *builtin_str[] = {
     "exit"
 };
 
-int (*builtin_func[]) (char **) = {
-    &builtin_cd,
-    &builtin_help,
-    &builtin_exit
-};
-
+// Returns number of supported built-in commands
 int num_builtins() {
     return sizeof(builtin_str) / sizeof(char *);
 }
 
+// Function to support changing directories
 int builtin_cd(char **args)
 {
     if (args[1] == NULL)
@@ -44,9 +42,13 @@ int builtin_cd(char **args)
         if (chdir(args[1]) != 0) 
             perror("Almond Shell");
 
+    // Indicate that built-in command was used
+    isBuiltin = 1;
+
     return 1;
 }
 
+// Function to support help command
 int builtin_help(char **args)
 {
     printf("Ammar Subei's Almond Shell\n");
@@ -58,12 +60,34 @@ int builtin_help(char **args)
 
 
     printf("Use the man command for information on other programs.\n");
+
+    // Indicate that built-in command was used
+    isBuiltin = 1;
     return 1;
 }
 
-int builtin_exit(char **args)
+// Function to support exit command
+void builtin_exit(char **args)
 {
-    return 0;
+    printf("Exiting Almond Shell... :(\n");
+    free(args);
+    exit(0);
+}
+
+// Check if built-in command used
+int check_builtin(char **args)
+{
+    if (!strcmp(args[0], "help"))
+        return builtin_help(args);
+
+    else if (!strcmp(args[0], "cd"))
+        return builtin_cd(args);
+    
+    else if (!strcmp(args[0], "exit"))
+        builtin_exit(args);
+
+    else
+        return 0;
 }
 
 // Function that checks if there are any redirections from user command line
@@ -119,42 +143,53 @@ char** check_redirection(char **oldArgs)
 // and runs the commands accordingly
 void execute_command(char **oldArgs)
 {
-    int status;
-    pid_t pid, wpid;
-    pid = fork();
-
-    // Error forking
-    if (pid < 0)
-        perror("Almond Shell");
-
-    // Child process
-    else if (pid == 0)
+    // If any built-in command was used, skip the following
+    if (!isBuiltin)
     {
-        // Check for any redirections and create a new arguments array
-        char **newArgs = check_redirection(oldArgs);
+        int status;
+        pid_t pid, wpid;
+        pid = fork();
 
-        // Execute the command and print out any errors
-        if (execvp(*newArgs, newArgs) == -1)
-            perror(*newArgs);
+        // Error forking
+        if (pid < 0)
+            perror("Fork");
 
-        exit(EXIT_FAILURE);
-    }
+        // Child process
+        else if (pid == 0)
+        {
+            // Check for any redirections and create a new arguments array
+            char **newArgs = check_redirection(oldArgs);
 
-    // Parent process
-    else
-    {
-        // Report the child process ID to user
-        printf("PID: %d\n", pid);
-        wpid = waitpid(pid, &status, 0);
+            // Check for built-in command and execute it
+            // if (!check_builtin(newArgs))
+            // {
+                // Execute the command if it's not built-in
+                if (execvp(*newArgs, newArgs) == -1)
+                    perror(*newArgs);
 
-        // Report to user the status of child process
-        if (WIFEXITED(status))
-            printf("Exit: %d\n", status);
-        
-        // Report if child went bonkers!
+                exit(EXIT_FAILURE);
+            // }
+        }
+
+        // Parent process
         else
-            printf("Child terminated abnormally!\n");
+        {
+            // Report the child process ID to user
+            printf("PID: %d\n", pid);
+            wpid = waitpid(pid, &status, 0);
+
+            // Report to user the status of child process
+            if (WIFEXITED(status))
+                printf("Exit status: %d\n", status);
+            
+            // Report if child went bonkers!
+            else
+                printf("Child terminated abnormally!\n");
+        }
     }
+
+    // Reset isBuiltin for next command
+    isBuiltin = 0;
 }
 
 // Function that reads a line from user and processes it by tokenizing the line 
@@ -172,14 +207,6 @@ char** read_and_tokenize(int *argIndex)
     if (token == NULL)
         return NULL;
 
-    if (!strcmp(token, "exit"))
-    {
-        printf("Exiting Almond Shell... :(\n");
-        free(args);
-        free(inputLine);
-        exit(0);
-    }
-
     // Tokenize line into arguments
     while (token != NULL)
     {
@@ -189,6 +216,8 @@ char** read_and_tokenize(int *argIndex)
     }
     // Add final NULL element
     args[*argIndex] = NULL;
+
+    check_builtin(args);
 
     return args;
 }
