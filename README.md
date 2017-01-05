@@ -19,7 +19,7 @@ The shell's up-to-date functionality:
 ### TO-DOs
 Here is a checklist of things I plan to work on for Almond Shell:
 
-- [ ] Support changing current directory
+- [x] Support changing current directory
+- [x] Provide user with `help` command
 - [ ] Support multiple child processes
-- [ ] Provide user with `help` command
 - [ ] Support command pipes
