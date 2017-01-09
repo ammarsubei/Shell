@@ -1,5 +1,5 @@
 # Almond Shell
-Primitive shell in C, written by Ammar Subei.
+A simple implementation of a shell in C, written by Ammar Subei.
 
 ### Functionality
 The shell's up-to-date functionality: 
