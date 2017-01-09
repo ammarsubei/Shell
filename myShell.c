@@ -7,7 +7,7 @@
 #include <sys/wait.h>
 #include "myShell.h"
 
-#define PROMPT "Almond> "
+#define MAXPATH 1024
 #define MAXLINE 2500
 #define MAXARGS 21
 
@@ -17,7 +17,12 @@ int isBuiltin = 0;
 // Function that prints out the prompt
 void prompt_user()
 {
-    printf(PROMPT);
+    char cwd[MAXPATH];
+
+    if (!getcwd(cwd, sizeof(cwd)))
+        perror("Almond Shell");
+    else
+        printf("%s ", cwd);
 }
 
 // Built-in shell commands
@@ -92,7 +97,7 @@ int check_builtin(char **args)
 
 // Function that checks if there are any redirections from user command line
 // This function is only called within the forked process
-char** check_redirection(char **oldArgs)
+char **check_redirection(char **oldArgs)
 {
     int redirects = 0;
     int index = 0;
@@ -194,7 +199,7 @@ void execute_command(char **oldArgs)
 
 // Function that reads a line from user and processes it by tokenizing the line 
 // using delimiters, and returns a new array of arguments composed of each string token
-char** read_and_tokenize(int *argIndex)
+char **read_and_tokenize(int *argIndex)
 {
     char delimiters[] = " \t\r\n\v\f";
     char *token = NULL;
