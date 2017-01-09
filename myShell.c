@@ -1,3 +1,13 @@
+/*
+    This is a simple implementation of a shell in C,
+    written by Ammar Subei.
+
+    Credit: Thanks to Stephen Brennan for help with
+    implementing the built-in functions. His tutorial
+    on writing a simple shell in C can be found here: 
+    https://brennan.io/2015/01/16/write-a-shell-in-c/
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
