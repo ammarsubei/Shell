@@ -1,4 +1,8 @@
-all: myShell.c
-	gcc -o myShell myShell.c
+CC = gcc
+CFLAGS = -g -Wall
+TARGET = myShell
+
+all: $(TARGET).c
+	$(CC) $(CFLAGS) -o $(TARGET) $(TARGET).c
 clean:
-	rm myShell 
+	$(RM) $(TARGET) 

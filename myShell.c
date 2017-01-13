@@ -32,7 +32,7 @@ void prompt_user()
     if (!getcwd(cwd, sizeof(cwd)))
         perror("Almond Shell");
     else
-        printf("%s ", cwd);
+        printf("%s$ ", cwd);
 }
 
 // Built-in shell commands
@@ -51,15 +51,16 @@ int num_builtins() {
 int builtin_cd(char **args)
 {
     if (args[1] == NULL)
-        fprintf(stderr, "Almond Shell: expected argument to \"cd\"\n");
-
-    else 
-        if (chdir(args[1]) != 0) 
+    {
+        if (chdir(getenv("HOME"))) 
             perror("Almond Shell");
+    }
+
+    else if (chdir(args[1])) 
+        perror("Almond Shell");
 
     // Indicate that built-in command was used
     isBuiltin = 1;
-
     return 1;
 }
 
@@ -99,7 +100,10 @@ int check_builtin(char **args)
         return builtin_cd(args);
     
     else if (!strcmp(args[0], "exit"))
+    {
         builtin_exit(args);
+        return 1;
+    }
 
     else
         return 0;
@@ -162,7 +166,7 @@ void execute_command(char **oldArgs)
     if (!isBuiltin)
     {
         int status;
-        pid_t pid, wpid;
+        pid_t pid;
         pid = fork();
 
         // Error forking
@@ -175,15 +179,11 @@ void execute_command(char **oldArgs)
             // Check for any redirections and create a new arguments array
             char **newArgs = check_redirection(oldArgs);
 
-            // Check for built-in command and execute it
-            // if (!check_builtin(newArgs))
-            // {
-                // Execute the command if it's not built-in
-                if (execvp(*newArgs, newArgs) == -1)
-                    perror(*newArgs);
+            // Execute the command if it's not built-in
+            if (execvp(*newArgs, newArgs) == -1)
+                perror(*newArgs);
 
-                exit(EXIT_FAILURE);
-            // }
+            exit(EXIT_FAILURE);
         }
 
         // Parent process
@@ -191,7 +191,7 @@ void execute_command(char **oldArgs)
         {
             // Report the child process ID to user
             printf("PID: %d\n", pid);
-            wpid = waitpid(pid, &status, 0);
+            waitpid(pid, &status, 0);
 
             // Report to user the status of child process
             if (WIFEXITED(status))
