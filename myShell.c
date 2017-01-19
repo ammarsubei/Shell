@@ -21,31 +21,32 @@
 #define MAXLINE 2500
 #define MAXARGS 21
 
-// Variable to check if any built-in commands were used
-int isBuiltin = 0;
 
 // Function that prints out the prompt
-void prompt_user()
+void user_prompt()
 {
-    char cwd[MAXPATH];
+    char currentDirectory[MAXPATH];
 
-    if (!getcwd(cwd, sizeof(cwd)))
+    if (!getcwd(currentDirectory, sizeof(currentDirectory)))
         perror("Almond Shell");
     else
-        printf("%s$ ", cwd);
+        printf("%s$ ", currentDirectory);
 }
 
-// Built-in shell commands
-char *builtin_str[] = {
+
+// List of built-in shell commands
+char *builtin_commands[] = {
     "cd",
     "help",
     "exit"
 };
 
+
 // Returns number of supported built-in commands
 int num_builtins() {
-    return sizeof(builtin_str) / sizeof(char *);
+    return sizeof(builtin_commands) / sizeof(char *);
 }
+
 
 // Function to support changing directories
 int builtin_cd(char **args)
@@ -59,36 +60,35 @@ int builtin_cd(char **args)
     else if (chdir(args[1])) 
         perror("Almond Shell");
 
-    // Indicate that built-in command was used
-    isBuiltin = 1;
     return 1;
 }
+
 
 // Function to support help command
 int builtin_help(char **args)
 {
-    printf("Ammar Subei's Almond Shell\n");
-    printf("Type program names and arguments, then hit enter to execute.\n");
+    printf("\nAmmar Subei's Almond Shell\n");
+    printf("Type program names and their arguments, then hit enter to execute.\n");
     printf("The following commands are built in:\n");
 
     for (int i = 0; i < num_builtins(); i++) 
-        printf("  %s\n", builtin_str[i]);
+        printf("  %s\n", builtin_commands[i]);
 
 
     printf("Use the man command for information on other programs.\n");
 
-    // Indicate that built-in command was used
-    isBuiltin = 1;
     return 1;
 }
+
 
 // Function to support exit command
 void builtin_exit(char **args)
 {
-    printf("Exiting Almond Shell... :(\n");
+    printf("\nExiting Almond Shell... :(\n");
     free(args);
     exit(0);
 }
+
 
 // Check if built-in command used
 int check_builtin(char **args)
@@ -109,7 +109,8 @@ int check_builtin(char **args)
         return 0;
 }
 
-// Function that checks if there are any redirections from user command line
+
+// Function that checks and applies any redirections from user command line
 // This function is only called within the forked process
 char **check_redirection(char **oldArgs)
 {
@@ -158,16 +159,16 @@ char **check_redirection(char **oldArgs)
     return newArgs;
 }
 
+
 // Function that forks the process, checks for any redirections,
-// and runs the commands accordingly
+// and runs the commands with any arguments accordingly
 void execute_command(char **oldArgs)
 {
-    // If any built-in command was used, skip the following
-    if (!isBuiltin)
+    // If not using built-in command
+    if (!check_builtin(oldArgs))
     {
         int status;
-        pid_t pid;
-        pid = fork();
+        pid_t pid = fork();
 
         // Error forking
         if (pid < 0)
@@ -189,23 +190,16 @@ void execute_command(char **oldArgs)
         // Parent process
         else
         {
-            // Report the child process ID to user
-            printf("PID: %d\n", pid);
+            // Wait for child process to die
             waitpid(pid, &status, 0);
 
-            // Report to user the status of child process
-            if (WIFEXITED(status))
-                printf("Exit status: %d\n", status);
-            
             // Report if child went bonkers!
-            else
-                printf("Child terminated abnormally!\n");
+            if (!WIFEXITED(status))
+                printf("Child terminated abnormally!\n");            
         }
     }
-
-    // Reset isBuiltin for next command
-    isBuiltin = 0;
 }
+
 
 // Function that reads a line from user and processes it by tokenizing the line 
 // using delimiters, and returns a new array of arguments composed of each string token
@@ -232,10 +226,9 @@ char **read_and_tokenize(int *argIndex)
     // Add final NULL element
     args[*argIndex] = NULL;
 
-    check_builtin(args);
-
     return args;
 }
+
 
 int main()
 {
@@ -244,14 +237,14 @@ int main()
     char **args = (char**) malloc(MAXARGS * sizeof(char*));
 
 	// Welcome message
-    printf("Welcome to Almond Shell!\n");
+    printf("\nWelcome to Almond Shell!\n");
     printf("Please enter your desired commands below.\n");
     printf("Enter \"help\" for more information.\n");
 
 	while (1)
 	{
-    	// Prompt user to enter command  
-    	prompt_user();
+    	// Display prompt for user  
+    	user_prompt();
 
     	// Read input line from user and tokenize it
         // Every token will be inserted in the arguments array args
