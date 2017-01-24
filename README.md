@@ -26,3 +26,5 @@ Here is a checklist of things I plan to work on for Almond Shell:
 - [x] Provide user with `help` command
 - [ ] Support multiple child processes
 - [ ] Support command pipes
+- [ ] Support tab-completion/auto-complete
+- [ ] Support command history
