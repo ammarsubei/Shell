@@ -1,5 +1,7 @@
 # Almond Shell
-A simple implementation of a shell in C, written by Ammar Subei.
+A simple implementation of a shell in C, written by Ammar Subei. Still a work-in-progress, and needs a decent amount of polishing. Future plans to support tab-completion for commands and/or their arguments.
+
+Enter your desired command followed by its arguments (if any). Supports some built-in functions like "cd" and "exit". Makefile provided for compilation.
 
 ### Functionality
 The shell's up-to-date functionality: 
@@ -24,3 +26,5 @@ Here is a checklist of things I plan to work on for Almond Shell:
 - [x] Provide user with `help` command
 - [ ] Support multiple child processes
 - [ ] Support command pipes
+- [ ] Support tab-completion/auto-complete
+- [ ] Support command history
