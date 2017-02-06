@@ -13,8 +13,7 @@ The shell's up-to-date functionality:
   * `command > filename` redirects the output of command to filename, overwriting existing contents of filename
   * `command >> filename` redirects the output of command to filename, appending to existing contents of filename
   * `command < filename` redirects command to read its input from filename
-4. Supports changing current directory
-5. **Does not** support multiple child processes
+4. Supports changing current working directory
 6. **Does not** support background processes
 7. **Does not** support command pipes
 
@@ -24,7 +23,6 @@ Here is a checklist of things I plan to work on for Almond Shell:
 - [x] Update user prompt to show current directory
 - [x] Support changing current directory
 - [x] Provide user with `help` command
-- [ ] Support multiple child processes
 - [ ] Support command pipes
 - [ ] Support tab-completion/auto-complete
 - [ ] Support command history
