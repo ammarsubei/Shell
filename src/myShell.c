@@ -16,8 +16,8 @@ https://brennan.io/2015/01/16/write-a-shell-in-c/
 #include <sys/types.h>
 #include <sys/wait.h>
 
-// #include <readline/readline.h>
-// #include <readline/history.h>
+#include <../include/readline/readline.h>
+#include <../include/readline/history.h>
 
 #include "../include/myShell.h"
 
