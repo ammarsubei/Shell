@@ -6,7 +6,7 @@ TARGET := bin/myShell
 SRCEXT := c
 SOURCES := $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
 OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
-CFLAGS := -g -Wall
+CFLAGS := -g -Wall -lreadline
 INC := -I include
 
 $(TARGET): $(OBJECTS)

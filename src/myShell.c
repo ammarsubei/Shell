@@ -15,11 +15,11 @@ https://brennan.io/2015/01/16/write-a-shell-in-c/
 #include <signal.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include "myShell.h"
 
-#define MAXPATH 1024
-#define MAXLINE 2500
-#define MAXARGS 21
+// #include <readline/readline.h>
+// #include <readline/history.h>
+
+#include "../include/myShell.h"
 
 
 // Function that prints out the prompt to the user
@@ -27,11 +27,10 @@ void user_prompt()
 {
     char currentDirectory[MAXPATH];
 
-    // Print out the current working directory
-    if (getcwd(currentDirectory, sizeof(currentDirectory)))
-        printf("%s$ ", currentDirectory);
-    else
+    if (!getcwd(currentDirectory, sizeof(currentDirectory)))
         perror("Almond Shell");
+    else
+        printf("%s$ ", currentDirectory);
 }
 
 
@@ -246,6 +245,7 @@ int main()
 	{
     	// Display prompt for user  
     	user_prompt();
+
 
     	// Read input line from user and tokenize it
         // Every token will be inserted in the arguments array args
