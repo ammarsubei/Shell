@@ -23,14 +23,14 @@ https://brennan.io/2015/01/16/write-a-shell-in-c/
 
 
 // Function that prints out the prompt to the user
-void user_prompt()
+char *user_prompt()
 {
     char currentDirectory[MAXPATH];
 
     if (!getcwd(currentDirectory, sizeof(currentDirectory)))
         perror("Almond Shell");
     else
-        printf("%s$ ", currentDirectory);
+        return currentDirectory;
 }
 
 
@@ -203,14 +203,14 @@ void execute_command(char **oldArgs)
 
 // Function that reads a line from user and processes it by tokenizing the line 
 // using delimiters, and returns a new array of arguments composed of each string token
-char **read_and_tokenize(int *argIndex)
+char **read_and_tokenize(int *argIndex, char *test)
 {
     char delimiters[] = " \t\r\n\v\f";
     char *token = NULL;
     char *inputLine = (char*) malloc(MAXLINE * sizeof(char));
     char **args = (char**) malloc(MAXARGS * sizeof(char*));
 
-    fgets(inputLine, MAXLINE, stdin);
+    inputLine = readline(test);
     token = strtok(inputLine, delimiters);
 
     if (token == NULL)
@@ -244,12 +244,12 @@ int main()
 	while (1)
 	{
     	// Display prompt for user  
-    	user_prompt();
+    	char *test = user_prompt();
 
 
     	// Read input line from user and tokenize it
         // Every token will be inserted in the arguments array args
-        args = read_and_tokenize(&argIndex);
+        args = read_and_tokenize(&argIndex, test);
 
         // If nothing was entered
         if (args == NULL)
