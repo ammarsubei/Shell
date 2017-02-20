@@ -23,14 +23,13 @@ https://brennan.io/2015/01/16/write-a-shell-in-c/
 
 
 // Function that prints out the prompt to the user
-char *user_prompt()
+char *user_prompt(char *currentDirectory)
 {
-    char currentDirectory[MAXPATH];
-
-    if (!getcwd(currentDirectory, sizeof(currentDirectory)))
-        perror("Almond Shell");
-    else
+    if (getcwd(currentDirectory, sizeof(currentDirectory)))
         return currentDirectory;
+    else
+        perror("getcwd");
+    return NULL;
 }
 
 
@@ -54,11 +53,11 @@ int builtin_cd(char **args)
     if (args[1] == NULL)
     {
         if (chdir(getenv("HOME"))) 
-            perror("Almond Shell");
+            perror("chdir");
     }
 
     else if (chdir(args[1])) 
-        perror("Almond Shell");
+        perror("chdir");
 
     return 1;
 }
@@ -240,11 +239,12 @@ int main()
 	// Initialize variables
     int argIndex = 0;
     char **args = (char**) malloc(MAXARGS * sizeof(char*));
+    char currentDirectory[MAXPATH];
 
 	while (1)
 	{
     	// Display prompt for user  
-    	char *test = user_prompt();
+    	char *test = user_prompt(currentDirectory);
 
 
     	// Read input line from user and tokenize it
