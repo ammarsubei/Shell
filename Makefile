@@ -17,6 +17,10 @@ $(BUILDDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
 	@mkdir -p $(BUILDDIR)
 	@echo " $(CC) $(INC) -c -o $@ $< $(CFLAGS)"; $(CC) $(INC) -c -o $@ $< $(CFLAGS)
 
+all: $(OBJECTS)
+	$(CC) $^ -o $(TARGET) $(CFLAGS)
+	./$(TARGET)
+
 run:
 	./$(TARGET)
 
