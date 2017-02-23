@@ -1,5 +1,6 @@
 # Almond Shell
-A simple implementation of a shell in C, written by Ammar Subei. Still a work-in-progress, and needs a decent amount of polishing. Future plans to support tab-completion for commands and/or their arguments.
+A simple implementation of a shell in C, written by Ammar Subei. Still a work-in-progress, and needs a decent amount of polishing.  
+Now supports basic tab-completion for file system paths, and supports access to command history using the arrow keys.
 
 Enter your desired command followed by its arguments (if any). Supports some built-in functions like "cd" and "exit". Makefile provided for compilation.
 
@@ -14,8 +15,10 @@ The shell's up-to-date functionality:
   * `command >> filename` redirects the output of command to filename, appending to existing contents of filename
   * `command < filename` redirects command to read its input from filename
 4. Supports changing current working directory
-6. **Does not** support background processes
-7. **Does not** support command pipes
+5. Supports basic tab-completion
+6. Supports command history
+7. **Does not** support background processes
+8. **Does not** support command pipes
 
 ### TO-DOs
 Here is a checklist of things I plan to work on for Almond Shell:
@@ -23,6 +26,6 @@ Here is a checklist of things I plan to work on for Almond Shell:
 - [x] Update user prompt to show current directory
 - [x] Support changing current directory
 - [x] Provide user with `help` command
+- [x] Support tab-completion/auto-complete
+- [x] Support command history
 - [ ] Support command pipes
-- [ ] Support tab-completion/auto-complete
-- [ ] Support command history
