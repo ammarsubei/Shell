@@ -1,3 +1,3 @@
-# Ignore the build, bin, and lib dirs
+# Ignore build and bin
 build
-lib/*
+bin/*
