@@ -16,22 +16,10 @@ https://brennan.io/2015/01/16/write-a-shell-in-c/
 #include <sys/types.h>
 #include <sys/wait.h>
 
-// #include <readline/readline.h>
-// #include <readline/history.h>
+#include <readline/readline.h>
+#include <readline/history.h>
 
 #include "../include/myShell.h"
-
-
-// Function that prints out the prompt to the user
-void user_prompt()
-{
-    char currentDirectory[MAXPATH];
-
-    if (!getcwd(currentDirectory, sizeof(currentDirectory)))
-        perror("Almond Shell");
-    else
-        printf("%s$ ", currentDirectory);
-}
 
 
 // List of built-in shell commands
@@ -43,7 +31,8 @@ char *builtin_commands[] = {
 
 
 // Returns number of supported built-in commands
-int num_builtins() {
+int num_builtins() 
+{
     return sizeof(builtin_commands) / sizeof(char *);
 }
 
@@ -54,11 +43,11 @@ int builtin_cd(char **args)
     if (args[1] == NULL)
     {
         if (chdir(getenv("HOME"))) 
-            perror("Almond Shell");
+            perror("chdir");
     }
 
     else if (chdir(args[1])) 
-        perror("Almond Shell");
+        perror("chdir");
 
     return 1;
 }
@@ -76,6 +65,7 @@ int builtin_help(char **args)
 
 
     printf("Use the man command for information on other programs.\n");
+    printf("Command history can be accessed using the arrow keys.\n");
 
     return 1;
 }
@@ -98,7 +88,7 @@ int check_builtin(char **args)
 
     else if (!strcmp(args[0], "cd"))
         return builtin_cd(args);
-    
+
     else if (!strcmp(args[0], "exit"))
     {
         builtin_exit(args);
@@ -110,8 +100,8 @@ int check_builtin(char **args)
 }
 
 
-// Function that checks and applies any redirections from user command line
-// This function is only called within the forked process
+// Function that checks and applies any redirections from user command
+// This function is only called within the child process
 char **check_redirection(char **oldArgs)
 {
     int redirects = 0;
@@ -122,6 +112,8 @@ char **check_redirection(char **oldArgs)
 
     // For loop that checks for redirection
     // Uses freopen to change stdin/stdout file descriptors
+    // NOTE: we don't need to reset file descriptors because
+    // the child process will terminate anyway
     for (int i = 0; i < index; i++)
     {
         if (!strcmp(oldArgs[i], ">"))
@@ -206,23 +198,37 @@ void execute_command(char **oldArgs)
 char **read_and_tokenize(int *argIndex)
 {
     char delimiters[] = " \t\r\n\v\f";
+    char prompt[MAXPATH];
     char *token = NULL;
     char *inputLine = (char*) malloc(MAXLINE * sizeof(char));
     char **args = (char**) malloc(MAXARGS * sizeof(char*));
 
-    fgets(inputLine, MAXLINE, stdin);
-    token = strtok(inputLine, delimiters);
+    // Get the current working directory for the prompt
+    if (!getcwd(prompt, sizeof(prompt)))
+        perror("Almond Shell");
+    strcat(prompt, "$ ");
 
+    // Use readline to read user input.
+    // readline() supports tab-completion
+    // for file system paths 
+    inputLine = readline(prompt);
+
+    // Add valid input to the history list
+    if (inputLine)
+        add_history(inputLine);
+
+    // Tokenize user input into arguments
+    token = strtok(inputLine, delimiters);
     if (token == NULL)
         return NULL;
 
-    // Tokenize line into arguments
     while (token != NULL)
     {
         args[*argIndex] = token;
         token = strtok(NULL, delimiters);
         (*argIndex)++;
     }
+
     // Add final NULL element
     args[*argIndex] = NULL;
 
@@ -236,19 +242,16 @@ int main()
     printf("\nWelcome to Almond Shell!\n");
     printf("Please enter your desired commands below.\n");
     printf("Enter \"help\" for more information.\n");
-    
-	// Initialize variables
+    printf("NEW: Command history and tab-completion for file paths is now supported!\n\n");
+
+    // Initialize variables
     int argIndex = 0;
     char **args = (char**) malloc(MAXARGS * sizeof(char*));
 
-	while (1)
-	{
-    	// Display prompt for user  
-    	user_prompt();
-
-
-    	// Read input line from user and tokenize it
-        // Every token will be inserted in the arguments array args
+    while (1)
+    {
+        // Read input line from user and tokenize it
+        // Every token will be inserted in the arguments array 'args'
         args = read_and_tokenize(&argIndex);
 
         // If nothing was entered
@@ -259,11 +262,11 @@ int main()
         // Execute the command by passing in the args array
         execute_command(args);
 
-    	// Reset argument array and its index
+        // Reset argument array and its index
         for (int i = 0; i <= argIndex; i++)
             args[i] = NULL;
 
         argIndex = 0;
-    	// Start again
-	}
+        // Start again
+    }
 }

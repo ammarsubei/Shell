@@ -13,4 +13,3 @@ char** check_redirection(char **oldArgs);
 char** read_and_tokenize(int *argIndex);
 
 void execute_command(char **oldArgs);
-void prompt_user();

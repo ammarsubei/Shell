@@ -11,11 +11,18 @@ INC := -I include
 
 $(TARGET): $(OBJECTS)
 	@echo " Linking..."
-	@echo " $(CC) $^ -o $(TARGET)"; $(CC) $^ -o $(TARGET)
+	@echo " $(CC) $^ -o $(TARGET) $(CFLAGS)"; $(CC) $^ -o $(TARGET) $(CFLAGS)
 
 $(BUILDDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
 	@mkdir -p $(BUILDDIR)
-	@echo " $(CC) $(CFLAGS) $(INC) -c -o $@ $<"; $(CC) $(CFLAGS) $(INC) -c -o $@ $<
+	@echo " $(CC) $(INC) -c -o $@ $< $(CFLAGS)"; $(CC) $(INC) -c -o $@ $< $(CFLAGS)
+
+all: $(OBJECTS)
+	$(CC) $^ -o $(TARGET) $(CFLAGS)
+	./$(TARGET)
+
+run:
+	./$(TARGET)
 
 clean:
 	@echo " Cleaning..."; 
