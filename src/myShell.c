@@ -29,15 +29,13 @@ char *builtin_commands[] = {
     "exit"
 };
 
-
 // Returns number of supported built-in commands
 int num_builtins() 
 {
     return sizeof(builtin_commands) / sizeof(char *);
 }
 
-
-// Function to support changing directories
+// Support changing directories
 int builtin_cd(char **args)
 {
     if (args[1] == NULL)
@@ -52,8 +50,7 @@ int builtin_cd(char **args)
     return 1;
 }
 
-
-// Function to support help command
+// Support help command
 int builtin_help(char **args)
 {
     printf("\nAmmar Subei's Almond Shell\n");
@@ -70,15 +67,13 @@ int builtin_help(char **args)
     return 1;
 }
 
-
-// Function to support exit command
+// Support exit command
 void builtin_exit(char **args)
 {
     printf("\nExiting Almond Shell... :(\n");
     free(args);
     exit(0);
 }
-
 
 // Check if built-in command used
 int check_builtin(char **args)
@@ -99,9 +94,7 @@ int check_builtin(char **args)
         return 0;
 }
 
-
-// Function that checks and applies any redirections from user command
-// This function is only called within the child process
+// Checks and applies any redirections from user command
 char **check_redirection(char **oldArgs)
 {
     int redirects = 0;
@@ -110,7 +103,6 @@ char **check_redirection(char **oldArgs)
     while (oldArgs[index] != NULL)
         index++;
 
-    // For loop that checks for redirection
     // Uses freopen to change stdin/stdout file descriptors
     // NOTE: we don't need to reset file descriptors because
     // the child process will terminate anyway
@@ -140,39 +132,32 @@ char **check_redirection(char **oldArgs)
     index++;
 
     // Now create new args array that doesnt contain redirection symbols
-    char **newArgs = (char**) malloc(index * sizeof(char*));
+    char **newArgs = (char **) malloc(index * sizeof(char *));
     for (int i = 0; i < index; i++)
         newArgs[i] = oldArgs[i];
 
-    // Add final NULL element
     newArgs[index-1] = NULL;
 
-    // Return our newly-created arguments array
     return newArgs;
 }
 
-
-// Function that forks the process, checks for any redirections,
+// Forks the process, checks for any redirections,
 // and runs the commands with any arguments accordingly
 void execute_command(char **oldArgs)
 {
-    // If not using built-in command
     if (!check_builtin(oldArgs))
     {
         int status;
         pid_t pid = fork();
 
-        // Error forking
         if (pid < 0)
             perror("Fork");
 
         // Child process
         else if (pid == 0)
         {
-            // Check for any redirections and create a new arguments array
             char **newArgs = check_redirection(oldArgs);
 
-            // Execute the command if it's not built-in
             if (execvp(*newArgs, newArgs) == -1)
                 perror(*newArgs);
 
@@ -182,7 +167,6 @@ void execute_command(char **oldArgs)
         // Parent process
         else
         {
-            // Wait for child process to die
             waitpid(pid, &status, 0);
 
             // Report if child went bonkers!
@@ -192,35 +176,27 @@ void execute_command(char **oldArgs)
     }
 }
 
-
-// Function that reads a line from user and processes it by tokenizing the line 
-// using delimiters, and returns a new array of arguments composed of each string token
+// Returns a new array of arguments composed of each string token
 char **read_and_tokenize(int *argIndex)
 {
-    char delimiters[] = " \t\r\n\v\f";
-    char prompt[MAXPATH];
+    char *delimiters = " \t\r\n\v\f";
     char *token = NULL;
-    char *inputLine = (char*) malloc(MAXLINE * sizeof(char));
-    char **args = (char**) malloc(MAXARGS * sizeof(char*));
+    char *prompt = (char *) malloc(MAXPATH);
+    char *inputLine = (char *) malloc(MAXLINE);
+    char **args = (char **) malloc(MAXARGS * sizeof(char *));
 
-    // Get the current working directory for the prompt
-    if (!getcwd(prompt, sizeof(prompt)))
+    if (!getcwd(prompt, MAXPATH))
         perror("Almond Shell");
     strcat(prompt, "$ ");
 
-    // Use readline to read user input.
-    // readline() supports tab-completion
-    // for file system paths 
     inputLine = readline(prompt);
 
-    // Add valid input to the history list
     if (inputLine)
         add_history(inputLine);
 
-    // Tokenize user input into arguments
     token = strtok(inputLine, delimiters);
-    if (token == NULL)
-        return NULL;
+    // if (token == NULL)
+    //     return NULL;
 
     while (token != NULL)
     {
@@ -235,7 +211,6 @@ char **read_and_tokenize(int *argIndex)
     return args;
 }
 
-
 int main()
 {
     // Welcome message
@@ -244,9 +219,8 @@ int main()
     printf("Enter \"help\" for more information.\n");
     printf("NEW: Command history and tab-completion for file paths is now supported!\n\n");
 
-    // Initialize variables
     int argIndex = 0;
-    char **args = (char**) malloc(MAXARGS * sizeof(char*));
+    char **args = (char **) malloc(MAXARGS * sizeof(char *));
 
     while (1)
     {
@@ -254,12 +228,9 @@ int main()
         // Every token will be inserted in the arguments array 'args'
         args = read_and_tokenize(&argIndex);
 
-        // If nothing was entered
         if (args == NULL)
-            // Skip command execution
             continue;
 
-        // Execute the command by passing in the args array
         execute_command(args);
 
         // Reset argument array and its index
@@ -267,6 +238,5 @@ int main()
             args[i] = NULL;
 
         argIndex = 0;
-        // Start again
     }
 }
