@@ -71,7 +71,11 @@ int builtin_help(char **args)
 void builtin_exit(char **args)
 {
     printf("\nExiting Almond Shell... :(\n");
+
+    for (int i = 0; i < MAXARGS; i++)
+        free(args[i]);
     free(args);
+
     exit(0);
 }
 
@@ -84,17 +88,11 @@ int check_builtin(char **args)
     else if (!strcmp(args[0], "cd"))
         return builtin_cd(args);
 
-    else if (!strcmp(args[0], "exit"))
-    {
-        builtin_exit(args);
-        return 1;
-    }
-
     else
         return 0;
 }
 
-// Checks and applies any redirections from user command
+// Checks for and applies any redirections from user input
 char **check_redirection(char **oldArgs)
 {
     int redirects = 0;
@@ -136,7 +134,7 @@ char **check_redirection(char **oldArgs)
     for (int i = 0; i < index; i++)
         newArgs[i] = oldArgs[i];
 
-    newArgs[index-1] = NULL;
+    newArgs[--index] = NULL;
 
     return newArgs;
 }
@@ -177,13 +175,12 @@ void execute_command(char **oldArgs)
 }
 
 // Returns a new array of arguments composed of each string token
-char **read_and_tokenize(int *argIndex)
+void read_and_tokenize(char **args, int *argIndex)
 {
     char *delimiters = " \t\r\n\v\f";
     char *token = NULL;
     char *prompt = (char *) malloc(MAXPATH);
     char *inputLine = (char *) malloc(MAXLINE);
-    char **args = (char **) malloc(MAXARGS * sizeof(char *));
 
     if (!getcwd(prompt, MAXPATH))
         perror("Almond Shell");
@@ -191,16 +188,22 @@ char **read_and_tokenize(int *argIndex)
 
     inputLine = readline(prompt);
 
+    if (!strcmp(inputLine, "exit"))
+    {
+        free(prompt);
+        free(inputLine);
+        builtin_exit(args);
+    }
+
     if (inputLine)
         add_history(inputLine);
 
+    // Tokenize the input line
     token = strtok(inputLine, delimiters);
-    // if (token == NULL)
-    //     return NULL;
 
     while (token != NULL)
     {
-        args[*argIndex] = token;
+        strcpy(args[*argIndex], token);
         token = strtok(NULL, delimiters);
         (*argIndex)++;
     }
@@ -208,7 +211,8 @@ char **read_and_tokenize(int *argIndex)
     // Add final NULL element
     args[*argIndex] = NULL;
 
-    return args;
+    free(prompt);
+    free(inputLine);
 }
 
 int main()
@@ -219,24 +223,26 @@ int main()
     printf("Enter \"help\" for more information.\n");
     printf("NEW: Command history and tab-completion for file paths is now supported!\n\n");
 
-    int argIndex = 0;
-    char **args = (char **) malloc(MAXARGS * sizeof(char *));
-
     while (1)
     {
+        int argIndex = 0;
+        char **args = (char **) malloc(MAXARGS * sizeof(char *));
+
+        for (int i = 0; i < MAXARGS; i++)
+            args[i] = (char *) malloc(MAXARGLENGTH);
+
         // Read input line from user and tokenize it
         // Every token will be inserted in the arguments array 'args'
-        args = read_and_tokenize(&argIndex);
+        read_and_tokenize(args, &argIndex);
 
         if (args == NULL)
             continue;
 
         execute_command(args);
 
-        // Reset argument array and its index
-        for (int i = 0; i <= argIndex; i++)
-            args[i] = NULL;
+        for (int i = 0; i < MAXARGS; i++)
+            free(args[i]);
 
-        argIndex = 0;
+        free(args);
     }
 }
