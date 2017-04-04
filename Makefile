@@ -1,18 +1,15 @@
-CC := gcc 
+CC := gcc
 SRCDIR := src
-BUILDDIR := build
-TARGET := bin/myShell
- 
 SRCEXT := c
+TARGET := bin/myShell
 SOURCES := $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
 CFLAGS := -g -Wall -lreadline
 
-$(TARGET): $(SOURCES)
-	@echo " Linking..."
-	@echo " $(CC) $^ -o $(TARGET) $(CFLAGS)"; $(CC) $^ -o $(TARGET) $(CFLAGS)
+$build:
+	@echo "$(CC) -o $(TARGET) $(SOURCES) $(CFLAGS)"; $(CC) -o $(TARGET) $(SOURCES) $(CFLAGS)
 
-all: $(OBJECTS)
-	$(CC) $^ -o $(TARGET) $(CFLAGS)
+all:
+	$(CC) -o $(TARGET) $(SOURCES) $(CFLAGS)
 	./$(TARGET)
 
 run:
@@ -20,6 +17,6 @@ run:
 
 clean:
 	@echo " Cleaning..."; 
-	@echo " $(RM) -r $(BUILDDIR) $(TARGET)"; $(RM) -r $(BUILDDIR) $(TARGET)
+	@echo " $(RM) $(TARGET)"; $(RM) $(TARGET)
 
 .PHONY: clean
