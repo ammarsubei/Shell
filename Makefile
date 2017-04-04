@@ -6,7 +6,7 @@ SOURCES := $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
 CFLAGS := -g -Wall -lreadline
 
 $build:
-	@echo "$(CC) -o $(TARGET) $(SOURCES) $(CFLAGS)"; $(CC) -o $(TARGET) $(SOURCES) $(CFLAGS)
+	$(CC) -o $(TARGET) $(SOURCES) $(CFLAGS)
 
 all:
 	$(CC) -o $(TARGET) $(SOURCES) $(CFLAGS)
@@ -16,7 +16,7 @@ run:
 	./$(TARGET)
 
 clean:
-	@echo " Cleaning..."; 
-	@echo " $(RM) $(TARGET)"; $(RM) $(TARGET)
+	@echo "Cleaning..."
+	$(RM) $(TARGET)
 
 .PHONY: clean
