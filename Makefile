@@ -5,12 +5,8 @@ TARGET := bin/myShell
 SOURCES := $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
 CFLAGS := -g -Wall -lreadline
 
-$build:
-	$(CC) -o $(TARGET) $(SOURCES) $(CFLAGS)
-
-all:
-	$(CC) -o $(TARGET) $(SOURCES) $(CFLAGS)
-	./$(TARGET)
+$(TARGET):
+	$(CC) -o $@ $(SOURCES) $(CFLAGS)
 
 run:
 	./$(TARGET)
